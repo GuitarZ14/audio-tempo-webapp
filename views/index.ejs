@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>变速伴奏生成器</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+      min-height: 100vh;
+      color: #fff;
+      padding: 20px;
+    }
+    .container {
+      max-width: 500px;
+      margin: 0 auto;
+    }
+    .header {
+      text-align: center;
+      padding: 30px 0 20px;
+    }
+    .header h1 {
+      font-size: 28px;
+      font-weight: bold;
+      margin-bottom: 8px;
+    }
+    .header p {
+      color: #aaa;
+      font-size: 14px;
+    }
+    .card {
+      background: rgba(255,255,255,0.08);
+      border-radius: 16px;
+      padding: 24px;
+      margin-bottom: 16px;
+      backdrop-filter: blur(10px);
+    }
+    .upload-label {
+      display: block;
+      border: 2px dashed rgba(78, 205, 196, 0.4);
+      border-radius: 12px;
+      padding: 40px 20px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    .upload-label:hover {
+      border-color: #4ecdc4;
+      background: rgba(78,205,196,0.05);
+    }
+    .upload-label .icon {
+      font-size: 48px;
+      margin-bottom: 12px;
+    }
+    .upload-label .text {
+      font-size: 16px;
+      color: #ccc;
+    }
+    .upload-label .hint {
+      font-size: 12px;
+      color: #888;
+      margin-top: 8px;
+    }
+    .file-name {
+      display: none;
+      padding: 12px;
+      background: rgba(78,205,196,0.1);
+      border-radius: 8px;
+      font-size: 14px;
+      color: #4ecdc4;
+      text-align: center;
+    }
+    .file-name.show {
+      display: block;
+    }
+    input[type="file"] { display: none; }
+    .bpm-row {
+      display: flex;
+      gap: 12px;
+      margin-top: 12px;
+    }
+    .bpm-input {
+      flex: 1;
+      height: 48px;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 10px;
+      text-align: center;
+      font-size: 20px;
+      color: #fff;
+      outline: none;
+    }
+    .bpm-input:focus {
+      border-color: #4ecdc4;
+    }
+    .bpm-input::placeholder { color: #666; }
+    .label { font-size: 14px; color: #aaa; margin-bottom: 8px; display: block; }
+    .submit-btn {
+      width: 100%;
+      height: 52px;
+      background: linear-gradient(135deg, #4ecdc4, #44b09e);
+      color: #fff;
+      border: none;
+      border-radius: 26px;
+      font-size: 18px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity 0.3s;
+    }
+    .submit-btn:hover { opacity: 0.9; }
+    .submit-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .error {
+      background: rgba(255,60,60,0.1);
+      border: 1px solid rgba(255,60,60,0.3);
+      color: #ff6b6b;
+      padding: 12px;
+      border-radius: 8px;
+      font-size: 14px;
+      margin-bottom: 16px;
+    }
+    .footer {
+      text-align: center;
+      padding: 30px;
+      color: #555;
+      font-size: 12px;
+    }
+    .loading {
+      display: none;
+      text-align: center;
+      padding: 20px;
+    }
+    .loading.show { display: block; }
+    .spinner {
+      width: 40px; height: 40px;
+      border: 3px solid rgba(255,255,255,0.1);
+      border-top-color: #4ecdc4;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin: 0 auto 12px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>🎵 变速伴奏生成器</h1>
+      <p>上传音频，自动生成多种速度的伴奏</p>
+    </div>
+
+    <% if (locals.error) { %>
+      <div class="error"><%= error %></div>
+    <% } %>
+
+    <div class="card">
+      <form action="/upload" method="post" enctype="multipart/form-data" id="uploadForm">
+        <label class="upload-label" for="audioInput">
+          <div class="icon">📁</div>
+          <div class="text">点击选择音频文件</div>
+          <div class="hint">支持 MP3 / WAV / M4A</div>
+        </label>
+        <input type="file" name="audio" id="audioInput" accept=".mp3,.wav,.m4a,.aac,.wma,.ogg" required>
+        <div class="file-name" id="fileName"></div>
+    </div>
+
+    <div class="card">
+      <span class="label">目标速度（BPM）</span>
+      <div class="bpm-row">
+        <input class="bpm-input" type="number" name="bpm1" placeholder="80" value="80">
+        <input class="bpm-input" type="number" name="bpm2" placeholder="100" value="100">
+        <input class="bpm-input" type="number" name="bpm3" placeholder="120" value="120">
+      </div>
+      <p style="color:#666;font-size:12px;margin-top:8px;">留空则不生成该速度版本</p>
+    </div>
+
+    <button class="submit-btn" type="submit" id="submitBtn">🎧 生成伴奏</button>
+    </form>
+
+    <div class="loading" id="loading">
+      <div class="spinner"></div>
+      <p style="color:#aaa;">正在处理音频，请稍候...</p>
+    </div>
+
+    <div class="footer">
+      每段音频自动添加 4 拍预备拍
+    </div>
+  </div>
+
+  <script>
+    document.getElementById('audioInput').onchange = function(e) {
+      const name = document.getElementById('fileName')
+      if (e.target.files[0]) {
+        name.textContent = '✅ ' + e.target.files[0].name
+        name.classList.add('show')
+      }
+    }
+    document.getElementById('uploadForm').onsubmit = function() {
+      document.getElementById('submitBtn').disabled = true
+      document.getElementById('loading').classList.add('show')
+    }
+  </script>
+</body>
+</html>

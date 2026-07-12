@@ -148,10 +148,11 @@ app.post('/upload', upload.single('audio'), async (req, res) => {
       generateCountIn(target, countInPath)
       await concatAudio(countInPath, adjustedPath, finalPath)
 
+      const safeName = `audio_${target}bpm.wav`
       results.push({
         bpm: target,
         file: finalPath,
-        name: `${baseName}_${target}bpm.wav`
+        name: safeName
       })
     }
 
@@ -166,7 +167,7 @@ app.post('/upload', upload.single('audio'), async (req, res) => {
 app.get('/play/:file', (req, res) => {
   const filePath = path.join(__dirname, 'processed', req.params.file)
   if (fs.existsSync(filePath)) {
-    res.sendFile(filePath)
+    res.sendFile(path.resolve(filePath))
   } else {
     res.status(404).send('文件不存在')
   }
@@ -175,7 +176,9 @@ app.get('/play/:file', (req, res) => {
 app.get('/download/:file', (req, res) => {
   const filePath = path.join(__dirname, 'processed', req.params.file)
   if (fs.existsSync(filePath)) {
-    res.download(filePath)
+    const name = req.query.name || 'audio.wav'
+    res.setHeader('Content-Disposition', `attachment; filename="${encodeURIComponent(name)}"`)
+    res.sendFile(path.resolve(filePath))
   } else {
     res.status(404).send('文件不存在')
   }

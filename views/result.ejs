@@ -96,11 +96,11 @@
       <div class="file-item">
         <div>
           <div class="bpm-label"><%= r.bpm %> BPM</div>
-          <div class="file-name"><%= r.name %></div>
+          <div class="file-name"><%= baseName %>_<%= r.bpm %>bpm.wav</div>
         </div>
         <div class="actions">
           <button class="btn btn-play" onclick="playAudio('<%= r.file %>', this)">▶ 播放</button>
-          <a class="btn btn-download" href="/download/<%= r.file %>" download>下载</a>
+          <a class="btn btn-download" href="/download/<%= r.file %>?name=<%= baseName %>_<%= r.bpm %>bpm.wav">下载</a>
         </div>
       </div>
       <% }); %>

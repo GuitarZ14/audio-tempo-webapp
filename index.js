@@ -168,7 +168,7 @@ app.post('/upload', upload.single('audio'), async (req, res) => {
       const safeName = `audio_${target}bpm.wav`
       results.push({
         bpm: target,
-        file: finalPath,
+        file: `${sessionId}_${target}.wav`,
         name: safeName
       })
     }

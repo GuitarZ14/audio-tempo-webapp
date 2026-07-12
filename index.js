@@ -117,8 +117,8 @@ app.post('/upload', upload.single('audio'), async (req, res) => {
     return res.render('index', { error: '请选择音频文件' })
   }
 
-  const targets = [req.body.bpm1, req.body.bpm2, req.body.bpm3]
-    .filter(Boolean).map(Number)
+  const targets = (req.body.bpms || '')
+    .split(/[\s,，、]+/).map(Number).filter(n => !isNaN(n) && n > 0)
   if (targets.length === 0) {
     return res.render('index', { error: '请填写至少一个目标速度' })
   }

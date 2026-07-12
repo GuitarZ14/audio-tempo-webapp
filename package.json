@@ -2,7 +2,7 @@
   "name": "audio-tempo-webapp",
   "version": "1.0.0",
   "scripts": {
-    "start": "node index.js"
+    "start": "apt-get update -qq && apt-get install -y -qq ffmpeg && node index.js"
   },
   "dependencies": {
     "express": "^4.18.2",

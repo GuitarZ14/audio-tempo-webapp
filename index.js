@@ -34,6 +34,24 @@ function detectBpm(audioPath) {
     const bpm = parseFloat(out.trim())
     if (bpm > 0 && bpm < 300) return Math.round(bpm)
   } catch {}
+  try {
+    const out = execSync(
+      `ffmpeg -i "${audioPath}" -ac 1 -af "astats=metadata=1" -f null - 2>&1`,
+      { encoding: 'utf8', timeout: 30000 }
+    )
+    const rmsMatch = out.match(/Overall RMS level: (-\d+\.\d+)/)
+    if (rmsMatch) {
+      const dur = out.match(/Duration: (\d+):(\d+):(\d+\.\d+)/)
+      if (dur) {
+        const secs = parseInt(dur[1])*3600 + parseInt(dur[2])*60 + parseFloat(dur[3])
+        const peaks = out.match(/Peak level dB: (-\d+\.\d+)/g)
+        if (peaks && peaks.length > 10) {
+          const bpm = Math.round(peaks.length / secs * 60 / 2 * 4)
+          if (bpm > 40 && bpm < 300) return bpm
+        }
+      }
+    }
+  } catch {}
   return 120
 }
 

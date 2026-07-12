@@ -81,9 +81,17 @@ function generateCountIn(bpm, outputPath) {
 
 function processTempo(inputPath, outputPath, ratio) {
   return new Promise((resolve, reject) => {
-    const filter = ratio > 2
-      ? `atempo=2.0,atempo=${(ratio / 2).toFixed(4)}`
-      : `atempo=${ratio.toFixed(4)}`
+    let filter
+    if (ratio >= 0.5 && ratio <= 2) {
+      filter = `atempo=${ratio.toFixed(4)}`
+    } else {
+      const filters = []
+      let r = ratio
+      while (r < 0.5) { filters.push('atempo=0.5'); r /= 0.5 }
+      while (r > 2) { filters.push('atempo=2.0'); r /= 2 }
+      filters.push(`atempo=${r.toFixed(4)}`)
+      filter = filters.join(',')
+    }
     const proc = spawn('ffmpeg', [
       '-i', inputPath, '-filter:a', filter, '-y', outputPath
     ], { stdio: ['pipe', 'pipe', 'pipe'] })

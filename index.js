@@ -28,14 +28,13 @@ const upload = multer({
 function detectBpm(audioPath) {
   try {
     const out = execSync(
-      `ffmpeg -i "${audioPath}" -ac 1 -af "astats=metadata=1:reset=1" -f null - 2>&1`,
+      `aubio tempo "${audioPath}" 2>/dev/null`,
       { encoding: 'utf8', timeout: 30000 }
     )
-    const match = out.match(/Overall\s*RMS\s*level\s*:\s*([-\d.]+)/i)
-    return match ? 120 : 120
-  } catch {
-    return 120
-  }
+    const bpm = parseFloat(out.trim())
+    if (bpm > 0 && bpm < 300) return Math.round(bpm)
+  } catch {}
+  return 120
 }
 
 function generateCountIn(bpm, outputPath) {

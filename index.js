@@ -155,6 +155,15 @@ app.post('/upload', upload.single('audio'), async (req, res) => {
   }
 })
 
+app.get('/play/:file', (req, res) => {
+  const filePath = path.join(__dirname, 'processed', req.params.file)
+  if (fs.existsSync(filePath)) {
+    res.sendFile(filePath)
+  } else {
+    res.status(404).send('文件不存在')
+  }
+})
+
 app.get('/download/:file', (req, res) => {
   const filePath = path.join(__dirname, 'processed', req.params.file)
   if (fs.existsSync(filePath)) {

@@ -100,7 +100,7 @@
         </div>
         <div class="actions">
           <button class="btn btn-play" onclick="playAudio('<%= r.file %>', this)">▶ 播放</button>
-          <a class="btn btn-download" href="/download/<%= r.file %>">下载</a>
+          <a class="btn btn-download" href="/download/<%= r.file %>" download>下载</a>
         </div>
       </div>
       <% }); %>
@@ -122,7 +122,7 @@
         btn.textContent = '▶ 播放'
         return
       }
-      player.src = '/download/' + file
+      player.src = '/play/' + file
       player.play()
       btn.textContent = '⏹ 暂停'
       player.onended = () => { btn.textContent = '▶ 播放' }

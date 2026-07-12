@@ -100,7 +100,7 @@
         </div>
         <div class="actions">
           <button class="btn btn-play" onclick="playAudio('<%= r.file %>', this)">▶ 播放</button>
-          <a class="btn btn-download" href="/download/<%= r.file %>?name=<%= baseName %>_<%= r.bpm %>bpm.wav">下载</a>
+          <a class="btn btn-download" href="/download/<%= r.file %>?name=<%= encodeURIComponent(baseName + '_' + r.bpm + 'bpm.wav') %>">下载</a>
         </div>
       </div>
       <% }); %>

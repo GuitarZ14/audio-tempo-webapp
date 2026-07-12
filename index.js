@@ -194,7 +194,7 @@ app.get('/download/:file', (req, res) => {
   const filePath = path.join(__dirname, 'processed', req.params.file)
   if (fs.existsSync(filePath)) {
     const name = req.query.name || 'audio.wav'
-    res.setHeader('Content-Disposition', `attachment; filename="${encodeURIComponent(name)}"`)
+    res.setHeader('Content-Disposition', `attachment; filename*=UTF-8''${encodeURIComponent(name)}`)
     res.sendFile(path.resolve(filePath))
   } else {
     res.status(404).send('文件不存在')
